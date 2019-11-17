@@ -2,36 +2,13 @@
 
 namespace LinkedList
 {
-    public class LinkedList<T>
+    public class LinkedListDoubly<T>
     {
-        private int _length;
+        public LinkedListNodeDoubly<T> Head;
 
-        public LinkedListNode<T> Head;
-        public LinkedListNode<T> Tail;
-        
-        public LinkedList(LinkedListNode<T> node)
+        public LinkedListDoubly(LinkedListNodeDoubly<T> node)
         {
             Head = node;
-            _length++;
-        }
-
-        public LinkedList()
-        {
-            
-        }
-
-        public LinkedList(T value)
-        {
-            Head = new LinkedListNode<T>(value);
-            _length++;
-        }
-
-        public LinkedList(T[] values)
-        {
-            foreach (var value in values)
-            {
-                AddLast(value);
-            }
         }
 
         public void AddAfter(T value, T existing)
@@ -41,9 +18,8 @@ namespace LinkedList
             {
                 if (node.Value.Equals(existing))
                 {
-                    var newNode = new LinkedListNode<T>(value) { Next = node.Next };
+                    var newNode = new LinkedListNodeDoubly<T>(value) { Prev = node, Next = node.Next };
                     node.Next = newNode;
-                    _length++;
                     return;
                 }
 
@@ -54,37 +30,34 @@ namespace LinkedList
         public void AddBefore(T value, T existing)
         {
             var node = Head;
-            var nodePrev = Head;
             while (node != null)
             {
                 if (node.Value.Equals(existing))
                 {
-                    var newNode = new LinkedListNode<T>(value) { Next = node };
-                    nodePrev.Next = newNode;
-                    _length++;
+                    var newNode = new LinkedListNodeDoubly<T>(value) { Prev = node.Prev, Next = node };
+                    node.Prev.Next = newNode;
                     return;
                 }
 
-                nodePrev = node;
+                node.Prev = node;
                 node = node.Next;
             }
         }
 
         public void AddFirst(T value)
         {
-            var node = new LinkedListNode<T>(value) { Next = Head };
+            var node = new LinkedListNodeDoubly<T>(value) { Prev = null, Next = Head };
+            Head.Prev = node;
             Head = node;
-            _length++;
         }
 
         public void AddLast(T value)
         {
-            var node = new LinkedListNode<T>(value);
+            var node = new LinkedListNodeDoubly<T>(value);
 
             if (Head == null)
             {
                 Head = node;
-                _length++;
             }
             else
             {
@@ -94,7 +67,7 @@ namespace LinkedList
                     if (n.Next == null)
                     {
                         n.Next = node;
-                        _length++;
+                        node.Prev = n;
                         break;
                     }
 
@@ -106,18 +79,16 @@ namespace LinkedList
         public void Remove(T value)
         {
             var node = Head;
-            var nodePrev = Head;
             while (node != null)
             {
                 if (node.Value.Equals(value))
                 {
-                    nodePrev.Next = node.Next;
-                    node.Next = null;
-                    _length--;
-                    return;
+                    node.Prev.Next = node.Next;
+                    node.Next.Prev = node.Prev; // TODO: ?
+                    node.Next = null; // TODO: ?
                 }
 
-                nodePrev = node;
+                node.Prev = node;
                 node = node.Next;
             }
         }
@@ -127,9 +98,9 @@ namespace LinkedList
             if (Head != null)
             {
                 var nodeNext = Head.Next;
+                nodeNext.Prev = null;
                 Head = null;
                 Head = nodeNext;
-                _length--;
             }
         }
 
@@ -138,18 +109,16 @@ namespace LinkedList
             if (Head != null)
             {
                 var node = Head;
-                var nodePrev = Head;
                 while (node != null)
                 {
                     if (node.Next == null)
                     {
                         // Set the reference to the last node to null to actually remove the last node from the linked list.
-                        nodePrev.Next = null;
-                        _length--;
+                        node.Prev.Next = null;
                         return;
                     }
 
-                    nodePrev = node;
+                    node.Prev = node;
                     node = node.Next;
                 }
             }
@@ -174,27 +143,23 @@ namespace LinkedList
         public void Clear()
         {
             Head = null;
-            _length = 0;
-
 
             // TODO: Necessary?
-            //var node = Head;
-            //while (node != null)
-            //{
-            //    node = node.Next;
-            //    if (node != null)
-            //        node.Next = null;
-            //}
-        }
-
-        public int Length()
-        {
-            return _length;
+            var node = Head;
+            while (node != null)
+            {
+                node = node.Next;
+                if (node != null)
+                {
+                    node.Prev = null;
+                    node.Next = null;
+                }
+            }
         }
 
         public void Print()
         {
-            Console.WriteLine("Values in the linked list:");
+            Console.WriteLine("Values in the doubly linked list:");
 
             var item = Head;
 
